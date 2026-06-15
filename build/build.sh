@@ -55,43 +55,49 @@ lb build
 ISO_FILE=$(ls "$BUILD_DIR"/*.iso | head -1)
 ISO_NAME="$DISTRO_NAME-$DISTRO_VERSION-$ARCH.iso"
 cp "$ISO_FILE" "$OUTPUT_DIR/$ISO_NAME"
+echo "$ISO_NAME" > "$OUTPUT_DIR/iso_name.txt"
 
 OVA_NAME="$DISTRO_NAME-$DISTRO_VERSION.ova"
 
-VBoxManage createvm --name "BlinkOS" --ostype "Debian_64" --register 2>/dev/null && \
-VBoxManage modifyvm "BlinkOS" \
-    --memory 2048 \
-    --cpus 2 \
-    --vram 128 \
-    --graphicscontroller vmsvga \
-    --audio none \
-    --usb on && \
-VBoxManage createhd \
-    --filename "/tmp/blink-disk.vdi" \
-    --size 20480 \
-    --format VDI && \
-VBoxManage storagectl "BlinkOS" --name "SATA" --add sata --controller IntelAhci && \
-VBoxManage storageattach "BlinkOS" \
-    --storagectl "SATA" \
-    --port 0 \
-    --device 0 \
-    --type hdd \
-    --medium "/tmp/blink-disk.vdi" && \
-VBoxManage storagectl "BlinkOS" --name "IDE" --add ide && \
-VBoxManage storageattach "BlinkOS" \
-    --storagectl "IDE" \
-    --port 0 \
-    --device 0 \
-    --type dvddrive \
-    --medium "$OUTPUT_DIR/$ISO_NAME" && \
-VBoxManage export "BlinkOS" \
-    --output "$OUTPUT_DIR/$OVA_NAME" \
-    --ovf20 \
-    --manifest \
-    --options manifest && \
-VBoxManage unregistervm "BlinkOS" --delete && \
-echo "$OVA_NAME" > "$OUTPUT_DIR/ova_name.txt" || \
-echo "WARNING: OVA generation skipped (VirtualBox kernel modules unavailable in Docker)" && \
-echo "install-iso-only" > "$OUTPUT_DIR/ova_name.txt"
+if VBoxManage createvm --name "BlinkOS" --ostype "Debian_64" --register 2>/dev/null; then
+    VBoxManage modifyvm "BlinkOS" \
+        --memory 2048 \
+        --cpus 2 \
+        --vram 128 \
+        --graphicscontroller vmsvga \
+        --audio none \
+        --usb on
 
-echo "$ISO_NAME" > "$OUTPUT_DIR/iso_name.txt"
+    VBoxManage createhd \
+        --filename "/tmp/blink-disk.vdi" \
+        --size 20480 \
+        --format VDI
+
+    VBoxManage storagectl "BlinkOS" --name "SATA" --add sata --controller IntelAhci
+    VBoxManage storageattach "BlinkOS" \
+        --storagectl "SATA" \
+        --port 0 \
+        --device 0 \
+        --type hdd \
+        --medium "/tmp/blink-disk.vdi"
+
+    VBoxManage storagectl "BlinkOS" --name "IDE" --add ide
+    VBoxManage storageattach "BlinkOS" \
+        --storagectl "IDE" \
+        --port 0 \
+        --device 0 \
+        --type dvddrive \
+        --medium "$OUTPUT_DIR/$ISO_NAME"
+
+    VBoxManage export "BlinkOS" \
+        --output "$OUTPUT_DIR/$OVA_NAME" \
+        --ovf20 \
+        --manifest \
+        --options manifest
+
+    VBoxManage unregistervm "BlinkOS" --delete
+    echo "$OVA_NAME" > "$OUTPUT_DIR/ova_name.txt"
+else
+    echo "WARNING: VBoxManage unavailable, skipping OVA"
+    echo "$OVA_NAME" > "$OUTPUT_DIR/ova_name.txt"
+fi
