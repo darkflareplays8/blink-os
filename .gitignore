@@ -1,0 +1,9 @@
+output/
+*.iso
+*.ova
+*.sha256
+.lb/
+chroot/
+binary/
+build/cache/
+*.log

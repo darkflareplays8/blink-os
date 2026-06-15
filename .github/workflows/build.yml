@@ -1,0 +1,96 @@
+name: Build Blink OS
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (e.g. 1.0.0)"
+        required: true
+        default: "1.0.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t blink-os-builder ./build
+
+      - name: Build ISO and OVA
+        run: |
+          mkdir -p output
+          docker run --privileged \
+            -e VERSION=${{ steps.version.outputs.version }} \
+            -v ${{ github.workspace }}/config:/config:ro \
+            -v ${{ github.workspace }}/output:/output \
+            blink-os-builder
+
+      - name: Read artifact names
+        id: artifacts
+        run: |
+          echo "iso=$(cat output/iso_name.txt)" >> $GITHUB_OUTPUT
+          echo "ova=$(cat output/ova_name.txt)" >> $GITHUB_OUTPUT
+
+      - name: Generate checksums
+        run: |
+          cd output
+          sha256sum ${{ steps.artifacts.outputs.iso }} > ${{ steps.artifacts.outputs.iso }}.sha256
+          sha256sum ${{ steps.artifacts.outputs.ova }} > ${{ steps.artifacts.outputs.ova }}.sha256
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Blink OS v${{ steps.version.outputs.version }}
+          body: |
+            ## Blink OS v${{ steps.version.outputs.version }}
+
+            Fast. Clean. Yours.
+
+            ### Downloads
+            | File | Description |
+            |------|-------------|
+            | `blink-os-${{ steps.version.outputs.version }}-amd64.iso` | Bootable ISO — flash to USB with Balena Etcher |
+            | `blink-os-${{ steps.version.outputs.version }}.ova` | VirtualBox image — import directly into VirtualBox |
+
+            ### Verify your download
+            ```
+            sha256sum -c blink-os-${{ steps.version.outputs.version }}-amd64.iso.sha256
+            sha256sum -c blink-os-${{ steps.version.outputs.version }}.ova.sha256
+            ```
+
+            ### System requirements
+            - 64-bit CPU
+            - 512MB RAM minimum (1GB recommended)
+            - 8GB storage minimum
+            - Built on Debian Bookworm
+          draft: false
+          prerelease: false
+          files: |
+            output/${{ steps.artifacts.outputs.iso }}
+            output/${{ steps.artifacts.outputs.iso }}.sha256
+            output/${{ steps.artifacts.outputs.ova }}
+            output/${{ steps.artifacts.outputs.ova }}.sha256

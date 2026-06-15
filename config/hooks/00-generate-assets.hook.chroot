@@ -1,0 +1,50 @@
+#!/bin/bash
+set -e
+
+apt-get install -y python3-pil python3-cairo
+
+python3 << 'PYEOF'
+from PIL import Image, ImageDraw, ImageFont
+import math
+
+W, H = 1920, 1080
+img = Image.new("RGB", (W, H), "#0a0a0f")
+draw = ImageDraw.Draw(img)
+
+for i in range(0, W, 60):
+    draw.line([(i, 0), (i, H)], fill="#0f0f18", width=1)
+for i in range(0, H, 60):
+    draw.line([(0, i), (W, i)], fill="#0f0f18", width=1)
+
+cx, cy = W // 2, H // 2
+for r in range(60, 500, 80):
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline="#00d4ff", width=1)
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline="#00d4ff08", width=3)
+
+for angle in range(0, 360, 45):
+    rad = math.radians(angle)
+    x = cx + int(480 * math.cos(rad))
+    y = cy + int(480 * math.sin(rad))
+    draw.line([(cx, cy), (x, y)], fill="#00d4ff15", width=1)
+
+for size, opacity in [(3, 180), (2, 120), (1, 80)]:
+    import random
+    random.seed(42)
+    for _ in range(60):
+        x = random.randint(0, W)
+        y = random.randint(0, H)
+        draw.ellipse([x - size, y - size, x + size, y + size], fill=f"#00d4ff")
+
+try:
+    font = ImageFont.truetype("/usr/share/fonts/truetype/noto/NotoSans-Light.ttf", 72)
+    font_sub = ImageFont.truetype("/usr/share/fonts/truetype/noto/NotoSans-Light.ttf", 18)
+except:
+    font = ImageFont.load_default()
+    font_sub = font
+
+draw.text((cx, cy - 20), "BLINK", font=font, fill="#ffffff", anchor="mm")
+draw.text((cx, cy + 50), "O S", font=font_sub, fill="#00d4ff", anchor="mm")
+
+img.save("/usr/share/blink/branding/blink-wallpaper.png")
+print("Wallpaper generated.")
+PYEOF

@@ -1,0 +1,27 @@
+componentName: blink
+
+strings:
+    productName: Blink OS
+    shortProductName: Blink
+    version: "@VERSION@"
+    shortVersion: "@VERSION@"
+    versionedName: Blink OS @VERSION@
+    shortVersionedName: Blink @VERSION@
+    bootloaderEntryName: Blink
+    productUrl: https://github.com/darkflareplays8/blink-os
+    supportUrl: https://github.com/darkflareplays8/blink-os/issues
+    releaseNotesUrl: https://github.com/darkflareplays8/blink-os/releases
+
+images:
+    productLogo: blink-logo.png
+    productIcon: blink-icon.png
+    productWelcome: blink-welcome.png
+
+slideshow: show.qml
+slideshowAPI: 2
+
+style:
+    sidebarBackground: "#0a0a0f"
+    sidebarText: "#ffffff"
+    sidebarTextSelect: "#00d4ff"
+    sidebarTextHighlight: "#00d4ff"
