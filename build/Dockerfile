@@ -1,6 +1,11 @@
 FROM debian:bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV APT_CONFIG=/etc/apt/apt.conf.d/99parallel
+
+RUN echo 'Acquire::Queue-Mode "access";' > /etc/apt/apt.conf.d/99parallel && \
+    echo 'Acquire::http::Pipeline-Depth "10";' >> /etc/apt/apt.conf.d/99parallel && \
+    echo 'Acquire::Languages "none";' >> /etc/apt/apt.conf.d/99parallel
 
 RUN apt-get update && apt-get install -y \
     live-build \
@@ -16,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     git \
     python3 \
     python3-pip \
+    aria2 \
     gnupg \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*

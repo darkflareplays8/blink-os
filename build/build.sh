@@ -22,6 +22,10 @@ apt-get install -y \
 
 cd "$BUILD_DIR"
 
+echo 'Acquire::Queue-Mode "access";' > /etc/apt/apt.conf.d/99parallel
+echo 'Acquire::http::Pipeline-Depth "10";' >> /etc/apt/apt.conf.d/99parallel
+echo 'Acquire::Languages "none";' >> /etc/apt/apt.conf.d/99parallel
+
 lb config \
     --architectures "$ARCH" \
     --distribution bookworm \
