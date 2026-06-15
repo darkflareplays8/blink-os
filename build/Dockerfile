@@ -16,8 +16,16 @@ RUN apt-get update && apt-get install -y \
     git \
     python3 \
     python3-pip \
-    virtualbox \
-    virtualbox-ext-pack \
+    gnupg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://www.virtualbox.org/download/oracle_vbox_2016.asc \
+    | gpg --dearmor -o /usr/share/keyrings/oracle-virtualbox.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox.gpg] \
+    https://download.virtualbox.org/virtualbox/debian bookworm contrib" \
+    > /etc/apt/sources.list.d/virtualbox.list && \
+    apt-get update && apt-get install -y virtualbox-7.1 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /build /output /config
