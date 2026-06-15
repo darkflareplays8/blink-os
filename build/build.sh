@@ -18,9 +18,7 @@ apt-get install -y \
     grub-pc-bin \
     grub-efi-amd64-bin \
     mtools \
-    dosfstools \
-    virtualbox \
-    virtualbox-ext-pack
+    dosfstools
 
 cd "$BUILD_DIR"
 
