@@ -12,12 +12,16 @@ on:
         default: "1.0.0"
 
 jobs:
-  build:
+  build-iso:
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
     permissions:
       contents: write
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      iso: ${{ steps.artifacts.outputs.iso }}
 
     steps:
       - name: Checkout
@@ -75,7 +79,7 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      - name: Build ISO and OVA
+      - name: Build ISO
         run: |
           mkdir -p output cache/apt cache/lb
           docker run --privileged \
@@ -86,22 +90,16 @@ jobs:
             -v ${{ github.workspace }}/cache/lb:/build/cache \
             blink-os-builder
 
-      - name: Read artifact names
+      - name: Read artifact name
         id: artifacts
-        run: |
-          echo "iso=$(cat output/iso_name.txt)" >> $GITHUB_OUTPUT
-          echo "ova=$(cat output/ova_name.txt)" >> $GITHUB_OUTPUT
+        run: echo "iso=$(cat output/iso_name.txt)" >> $GITHUB_OUTPUT
 
-      - name: Generate checksums
+      - name: Generate ISO checksum
         run: |
           cd output
           sha256sum ${{ steps.artifacts.outputs.iso }} > ${{ steps.artifacts.outputs.iso }}.sha256
-          OVA="${{ steps.artifacts.outputs.ova }}"
-          if [ -f "$OVA" ]; then
-            sha256sum "$OVA" > "$OVA.sha256"
-          fi
 
-      - name: Create GitHub Release
+      - name: Upload ISO to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
@@ -117,18 +115,106 @@ jobs:
             | `blink-os-${{ steps.version.outputs.version }}-amd64.iso` | Bootable ISO — flash to USB with Balena Etcher |
             | `blink-os-${{ steps.version.outputs.version }}.ova` | VirtualBox image — import directly into VirtualBox |
 
-            ### Verify your download
-            ```
-            sha256sum -c blink-os-${{ steps.version.outputs.version }}-amd64.iso.sha256
-            ```
-
             ### System requirements
             - 64-bit CPU
             - 512MB RAM minimum (1GB recommended)
             - 8GB storage minimum
             - Built on Debian Bookworm
-          draft: false
+          draft: true
           prerelease: false
           files: |
             output/${{ steps.artifacts.outputs.iso }}
             output/${{ steps.artifacts.outputs.iso }}.sha256
+
+      - name: Upload ISO as artifact for OVA job
+        uses: actions/upload-artifact@v4
+        with:
+          name: blink-iso
+          path: output/${{ steps.artifacts.outputs.iso }}
+          retention-days: 1
+
+  build-ova:
+    needs: build-iso
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Install VirtualBox
+        run: |
+          curl -fsSL https://www.virtualbox.org/download/oracle_vbox_2016.asc \
+            | sudo gpg --dearmor -o /usr/share/keyrings/oracle-virtualbox.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox.gpg] \
+            https://download.virtualbox.org/virtualbox/debian bookworm contrib" \
+            | sudo tee /etc/apt/sources.list.d/virtualbox.list
+          sudo apt-get update
+          sudo apt-get install -y virtualbox-7.1
+
+      - name: Download ISO
+        uses: actions/download-artifact@v4
+        with:
+          name: blink-iso
+          path: output
+
+      - name: Build OVA from ISO
+        run: |
+          VERSION="${{ needs.build-iso.outputs.version }}"
+          ISO="output/blink-os-${VERSION}-amd64.iso"
+          OVA="output/blink-os-${VERSION}.ova"
+
+          VBoxManage createvm --name "BlinkOS" --ostype "Debian_64" --register
+
+          VBoxManage modifyvm "BlinkOS" \
+            --memory 2048 \
+            --cpus 2 \
+            --vram 128 \
+            --graphicscontroller vmsvga \
+            --audio none \
+            --firmware efi \
+            --usb on
+
+          VBoxManage createhd \
+            --filename "/tmp/blink-disk.vdi" \
+            --size 20480 \
+            --format VDI
+
+          VBoxManage storagectl "BlinkOS" --name "SATA" --add sata --controller IntelAhci
+          VBoxManage storageattach "BlinkOS" \
+            --storagectl "SATA" \
+            --port 0 \
+            --device 0 \
+            --type hdd \
+            --medium "/tmp/blink-disk.vdi"
+
+          VBoxManage storagectl "BlinkOS" --name "IDE" --add ide
+          VBoxManage storageattach "BlinkOS" \
+            --storagectl "IDE" \
+            --port 0 \
+            --device 0 \
+            --type dvddrive \
+            --medium "$ISO"
+
+          VBoxManage export "BlinkOS" \
+            --output "$OVA" \
+            --ovf20 \
+            --manifest \
+            --options manifest
+
+          VBoxManage unregistervm "BlinkOS" --delete
+
+      - name: Generate OVA checksum
+        run: |
+          VERSION="${{ needs.build-iso.outputs.version }}"
+          cd output
+          sha256sum "blink-os-${VERSION}.ova" > "blink-os-${VERSION}.ova.sha256"
+
+      - name: Publish release with OVA
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build-iso.outputs.version }}
+          draft: false
+          files: |
+            output/blink-os-${{ needs.build-iso.outputs.version }}.ova
+            output/blink-os-${{ needs.build-iso.outputs.version }}.ova.sha256
