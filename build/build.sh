@@ -34,7 +34,7 @@ lb config \
     --win32-loader false \
     --image-name "$DISTRO_NAME-$DISTRO_VERSION" \
     --bootappend-live "boot=live components quiet splash" \
-    --linux-packages "linux-image-amd64 linux-headers-amd64"
+    --linux-packages "linux-image linux-headers"
 
 cp /config/packages/packages.list "$BUILD_DIR/config/package-lists/blink.list.chroot"
 
