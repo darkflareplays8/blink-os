@@ -147,7 +147,7 @@ jobs:
           curl -fsSL https://www.virtualbox.org/download/oracle_vbox_2016.asc \
             | sudo gpg --dearmor -o /usr/share/keyrings/oracle-virtualbox.gpg
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox.gpg] \
-            https://download.virtualbox.org/virtualbox/debian bookworm contrib" \
+            https://download.virtualbox.org/virtualbox/debian noble contrib" \
             | sudo tee /etc/apt/sources.list.d/virtualbox.list
           sudo apt-get update
           sudo apt-get install -y virtualbox-7.1
