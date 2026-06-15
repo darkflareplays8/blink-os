@@ -11,8 +11,6 @@ gedit
 firefox-esr
 vlc
 gimp
-libreoffice
-libreoffice-gtk3
 network-manager
 network-manager-gnome
 pulseaudio
@@ -20,14 +18,12 @@ pavucontrol
 blueman
 cups
 system-config-printer
-grub-pc
 grub-efi-amd64
 os-prober
 calamares
 calamares-settings-debian
 fonts-noto
 fonts-noto-color-emoji
-fonts-inter
 papirus-icon-theme
 arc-theme
 gtk2-engines-murrine

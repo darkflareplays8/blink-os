@@ -30,6 +30,7 @@ lb config \
     --archive-areas "main contrib non-free non-free-firmware" \
     --apt-recommends false \
     --binary-images iso-hybrid \
+    --uefi-secure-boot disable \
     --memtest none \
     --win32-loader false \
     --image-name "$DISTRO_NAME-$DISTRO_VERSION" \
