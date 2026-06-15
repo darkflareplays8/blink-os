@@ -103,3 +103,4 @@ else
 fi
 
 chmod -R 777 "$OUTPUT_DIR"
+chmod -R 777 /build/cache 2>/dev/null || true
