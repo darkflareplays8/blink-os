@@ -17,6 +17,7 @@ cp /usr/share/blink/installer/branding.desc /etc/calamares/branding/blink/
 cp /usr/share/blink/installer/show.qml /etc/calamares/branding/blink/
 cp /usr/share/blink/installer/settings.conf /etc/calamares/
 
+mkdir -p /usr/share/backgrounds
 cp /usr/share/blink/branding/blink-wallpaper.png /usr/share/backgrounds/blink-wallpaper.png
 
 mkdir -p /etc/skel/.config/mate/backgrounds
