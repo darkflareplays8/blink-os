@@ -101,3 +101,5 @@ else
     echo "WARNING: VBoxManage unavailable, skipping OVA"
     echo "$OVA_NAME" > "$OUTPUT_DIR/ova_name.txt"
 fi
+
+chmod -R 777 "$OUTPUT_DIR"
