@@ -41,14 +41,7 @@ lb config \
     --linux-packages "linux-image linux-headers"
 
 mkdir -p "$BUILD_DIR/config/includes.chroot/etc/live"
-cat > "$BUILD_DIR/config/includes.chroot/etc/live/config.conf" << LIVEEOF
-LIVE_USERNAME="blink"
-LIVE_USER_FULLNAME="Blink OS"
-LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth"
-LIVE_HOSTNAME="blink"
-LIVE_EOF
-
-echo "blink:live" | chpasswd -R "$BUILD_DIR/config/includes.chroot" 2>/dev/null || true
+printf 'LIVE_USERNAME="blink"\nLIVE_USER_FULLNAME="Blink OS"\nLIVE_HOSTNAME="blink"\n'     > "$BUILD_DIR/config/includes.chroot/etc/live/config.conf"
 
 cp /config/packages/packages.list "$BUILD_DIR/config/package-lists/blink.list.chroot"
 
