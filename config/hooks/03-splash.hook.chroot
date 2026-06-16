@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+
+apt-get install -y python3-pil --no-install-recommends
+
+python3 << 'PYEOF'
+from PIL import Image, ImageDraw, ImageFont
+import math
+
+W, H = 640, 480
+img = Image.new("RGB", (W, H), "#09090f")
+draw = ImageDraw.Draw(img)
+
+for x in range(0, W, 48):
+    draw.line([(x, 0), (x, H)], fill="#0f0f18", width=1)
+for y in range(0, H, 48):
+    draw.line([(0, y), (W, y)], fill="#0f0f18", width=1)
+
+cx, cy = W // 2, H // 2 - 40
+for r in range(40, 220, 55):
+    alpha = int(255 * (1 - r / 220) * 0.3)
+    color = (0, 212, 255, alpha)
+    draw.ellipse([cx-r, cy-r, cx+r, cy+r], outline=(0, 212, 255), width=1)
+
+try:
+    font_big = ImageFont.truetype("/usr/share/fonts/truetype/noto/NotoSans-Light.ttf", 64)
+    font_small = ImageFont.truetype("/usr/share/fonts/truetype/noto/NotoSans-Light.ttf", 14)
+except:
+    font_big = ImageFont.load_default()
+    font_small = font_big
+
+draw.text((cx, cy - 10), "BLINK", font=font_big, fill="#ffffff", anchor="mm")
+draw.text((cx, cy + 44), "O  S", font=font_small, fill="#00d4ff", anchor="mm")
+draw.text((cx, H - 30), "blink-os.pages.dev", font=font_small, fill="#3a3a52", anchor="mm")
+
+img.save("/usr/share/blink/branding/splash.png")
+print("Splash generated.")
+PYEOF

@@ -56,6 +56,10 @@ cp -r /config/installer "$BUILD_DIR/config/includes.chroot/usr/share/blink/"
 
 cp /config/hooks/*.hook.chroot "$BUILD_DIR/config/hooks/normal/" 2>/dev/null || true
 
+if [ -d /config/bootloaders ]; then
+    cp -r /config/bootloaders/* "$BUILD_DIR/config/bootloaders/" 2>/dev/null || true
+fi
+
 lb build
 
 ISO_FILE=$(ls "$BUILD_DIR"/*.iso | head -1)
@@ -110,3 +114,7 @@ fi
 
 chmod -R 777 "$OUTPUT_DIR"
 chmod -R 777 /build/cache 2>/dev/null || true
+
+if [ -f /build/chroot/usr/share/blink/branding/splash.png ]; then
+    cp /build/chroot/usr/share/blink/branding/splash.png "$BUILD_DIR/config/bootloaders/isolinux/splash.png"
+fi
