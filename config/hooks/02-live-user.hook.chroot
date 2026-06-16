@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+
+if id blink &>/dev/null; then
+    echo "blink:live" | chpasswd
+else
+    useradd -m -s /bin/bash -G audio,cdrom,dip,floppy,video,plugdev,netdev,sudo blink
+    echo "blink:live" | chpasswd
+fi
+
+mkdir -p /etc/live
+cat > /etc/live/config.conf << LEOF
+LIVE_USERNAME="blink"
+LIVE_USER_FULLNAME="Blink OS"
+LIVE_HOSTNAME="blink"
+LEOF

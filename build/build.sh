@@ -29,8 +29,7 @@ echo 'Acquire::Languages "none";' >> /etc/apt/apt.conf.d/99parallel
 lb config \
     --architectures "$ARCH" \
     --distribution bookworm \
-    --debian-installer live \
-    --debian-installer-gui true \
+    --debian-installer none \
     --archive-areas "main contrib non-free non-free-firmware" \
     --apt-recommends false \
     --binary-images iso-hybrid \
@@ -38,8 +37,18 @@ lb config \
     --memtest none \
     --win32-loader false \
     --image-name "$DISTRO_NAME-$DISTRO_VERSION" \
-    --bootappend-live "boot=live components quiet splash" \
+    --bootappend-live "boot=live components quiet splash username=blink hostname=blink" \
     --linux-packages "linux-image linux-headers"
+
+mkdir -p "$BUILD_DIR/config/includes.chroot/etc/live"
+cat > "$BUILD_DIR/config/includes.chroot/etc/live/config.conf" << LIVEEOF
+LIVE_USERNAME="blink"
+LIVE_USER_FULLNAME="Blink OS"
+LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth"
+LIVE_HOSTNAME="blink"
+LIVE_EOF
+
+echo "blink:live" | chpasswd -R "$BUILD_DIR/config/includes.chroot" 2>/dev/null || true
 
 cp /config/packages/packages.list "$BUILD_DIR/config/package-lists/blink.list.chroot"
 
