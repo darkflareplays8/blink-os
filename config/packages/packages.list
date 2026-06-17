@@ -46,7 +46,5 @@ policykit-1
 xterm
 x11-xserver-utils
 x11-utils
-virtualbox-guest-utils
-virtualbox-guest-x11
 xserver-xorg-video-vesa
 xserver-xorg-video-fbdev
