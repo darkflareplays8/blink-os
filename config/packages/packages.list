@@ -1,3 +1,4 @@
+sudo
 openbox
 feh
 xorg
@@ -9,6 +10,7 @@ firefox-esr
 network-manager
 network-manager-gnome
 pulseaudio
+pulseaudio-utils
 pipewire
 wireplumber
 gvfs
@@ -16,7 +18,10 @@ gvfs-backends
 udisks2
 upower
 xdg-user-dirs
+xdg-user-dirs-gtk
 bash-completion
+htop
+nano
 fonts-noto
 fonts-noto-color-emoji
 papirus-icon-theme
@@ -35,3 +40,9 @@ libgtk-4-bin
 libgtk-4-1
 libgtk-layer-shell0
 gedit
+dbus
+dbus-x11
+policykit-1
+xterm
+x11-xserver-utils
+x11-utils

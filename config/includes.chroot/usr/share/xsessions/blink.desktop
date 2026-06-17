@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Blink
+Comment=Blink OS desktop session
+Exec=/usr/bin/blink-session
+TryExec=/usr/bin/blink-session
+Type=Application
+DesktopNames=Blink
