@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+systemctl enable vboxadd 2>/dev/null || true
+systemctl enable vboxadd-service 2>/dev/null || true
